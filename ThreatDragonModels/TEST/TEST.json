@@ -5,17 +5,14 @@
     "description": "aaa"
   },
   "detail": {
-    "contributors": [
-      {
-        "name": "qqqq"
-      }
-    ],
+    "contributors": [],
     "diagrams": [
       {
         "title": "qqqqq",
         "thumbnail": "./public/content/images/thumbnail.jpg",
         "id": 0
       }
-    ]
+    ],
+    "reviewer": "jjjj"
   }
 }
