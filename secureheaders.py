@@ -2,8 +2,6 @@
 import requests
 import argparse
 
-requests.packages.urllib3.disable_warnings()
-
 
 def prGreen(skk): print("\033[92m {}\033[00m" .format(skk))
 def prRed(skk): print("\033[91m {}\033[00m" .format(skk))
@@ -28,28 +26,32 @@ def verifysecureheaders(url,proxy):
     req = None
     proxies={}
 
-    if(proxy):
-        proxy = proxy[0]
-        proxies={
-                "http":"http://" + proxy,
-                "https":"http://" + proxy
-        }
-        req = requests.get('http://'+url,proxies=proxies,verify=False)
-    else:
-        req = requests.get('http://'+url)
-
-    response_headers = {k.lower(): v for k, v in req.headers.items()}
-
-    for header in headers:
-        if (header.lower()) in response_headers:
-            prGreen("[✓]" + header + " : " + response_headers[header.lower()])
+    try:
+        if(proxy):
+            requests.packages.urllib3.disable_warnings()
+            proxies={
+                    "http":"http://" + proxy,
+                    "https":"http://" + proxy
+            }
+            req = requests.get('http://'+url,proxies=proxies,verify=False)
         else:
-            prRed("[✗]" + header)
+            req = requests.get('http://'+url)
+
+        response_headers = {k.lower(): v for k, v in req.headers.items()}
+
+        for header in headers:
+            if (header.lower()) in response_headers:
+                prGreen("[✓]" + header + " : " + response_headers[header.lower()])
+            else:
+                prRed("[✗]" + header)
+    except Exception as e:
+        print("Hmmm... Something went wrong...")
+        print(e)
     
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-u','--url',required=True,nargs='+',help='URL to Scan')
-    parser.add_argument('-p','--proxy',required=False,nargs='+',help='ip:port of Burp Proxy Server')
+    parser.add_argument('-p','--proxy',required=False,help='ip:port of Burp Proxy Server')
     args = parser.parse_args()
     print("""
     
