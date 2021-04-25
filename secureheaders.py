@@ -2,90 +2,54 @@
 import requests
 import argparse
 
-def verifysecureheaders(url,ssl):
-    if ssl == True:
-        req =  requests.get('https://'+url)
-        # strict-Transport-security Header
-        if 'strict-transport-security' in req.headers:
-            print ("[+] strict-transport-security YES ")
-        else:
-            print ("[+] strict-transport-security NO ")
-        # X-Frame-Options headers
-        if 'X-Frame-Options' in req.headers:
-            print("[+] X-Frame-Options YES ")
-        else:
-            print("[+] X-Frame-Options NO ")
-        # XSS Protection Header
-        if 'X-XSS-Protection' in req.headers:
-            print("[+] XSS Protection YES ")
-        else:
-            print("[+] XSS Protection NO ")
-        # X-Content-Type-Options
-        if 'X-Content-Type-Options' in req.headers:
-            print("[+] X-Content-Type-Options YES ")
-        else:
-            print("[+] X-Content-Type-Options NO ")
-        # Content-Security-Policy
-        if 'Content-Security-Policy' in req.headers:
-            print("[+] Content-Security-Policy YES ")
-        else:
-            print("[+] Content-Security-Policy NO ")
-        # X-Permitted-Cross-Domain-Policies
-        if 'X-Permitted-Cross-Domain-Policies' in req.headers:
-            print("[+] X-Permitted-Cross-Domain-Policies YES ")
-        else:
-            print("[+] X-Permitted-Cross-Domain-Policies NO ")
-        # Referrer-Policy
-        if 'Referrer-Policy' in req.headers:
-            print("[+] Referrer-Policy YES ")
-        else:
-            print("[+] Referrer-Policy NO ")
-        return True
+requests.packages.urllib3.disable_warnings()
+
+
+def prGreen(skk): print("\033[92m {}\033[00m" .format(skk))
+def prRed(skk): print("\033[91m {}\033[00m" .format(skk))
+
+def verifysecureheaders(url,proxy):
+    headers = [
+        "Content-Type",
+        "Content-Disposition",
+        "Content-Security-Policy",
+        "X-Content-Type-Options",
+        "Strict-Transport-Security",
+        "Referrer-Policy",
+        "X-Frame-Options",
+        "X-Content-Type-Options",
+        "X-Permitted-Cross-Domain-Policies",
+        "Clear-Site-Data",
+        "Cross-Origin-Embedder-Policy",
+        "Cross-Origin-Opener-Policy",
+        "Cross-Origin-Resource-Policy"
+    ]
+
+    req = None
+    proxies={}
+
+    if(proxy):
+        proxy = proxy[0]
+        proxies={
+                "http":"http://" + proxy,
+                "https":"http://" + proxy
+        }
+        req = requests.get('http://'+url,proxies=proxies,verify=False)
     else:
-        req = requests.get('http://' + url)
-        # strict-Transport-security Header
-        if 'strict-transport-security' in req.headers:
-            print("[+] strict-transport-security YES ")
+        req = requests.get('http://'+url)
 
-        else:
-            print("[+] strict-transport-security NO ")
-        # X-Frame-Options headers
-        if 'X-Frame-Options' in req.headers:
-            print("[+] X-Frame-Options YES ")
-        else:
-            print("[+] X-Frame-Options NO ")
+    response_headers = {k.lower(): v for k, v in req.headers.items()}
 
-        # XSS Protection Header
-        if 'X-XSS-Protection' in req.headers:
-            print("[+] XSS Protection YES ")
+    for header in headers:
+        if (header.lower()) in response_headers:
+            prGreen("[✓]" + header + " : " + response_headers[header.lower()])
         else:
-            print("[+] XSS Protection NO ")
-        # X-Content-Type-Options
-        if 'X-Content-Type-Options' in req.headers:
-            print("[+] X-Content-Type-Options YES ")
-        else:
-            print("[+] X-Content-Type-Options NO ")
-        # Content-Security-Policy
-        if 'Content-Security-Policy' in req.headers:
-            print("[+] Content-Security-Policy YES ")
-        else:
-            print("[+] Content-Security-Policy NO ")
-        # X-Permitted-Cross-Domain-Policies
-        if 'X-Permitted-Cross-Domain-Policies' in req.headers:
-            print("[+] X-Permitted-Cross-Domain-Policies YES ")
-        else:
-            print("[+] X-Permitted-Cross-Domain-Policies NO ")
-        # Referrer-Policy
-        if 'Referrer-Policy' in req.headers:
-            print("[+] Referrer-Policy YES ")
-        else:
-            print("[+] Referrer-Policy NO ")
-        return True
+            prRed("[✗]" + header)
     
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-u','--url',required=True,nargs='+',help='URL you need Scan')
-    parser.add_argument('-ssl', '--ssl',action="store_true",help='URL you need Scan')
+    parser.add_argument('-u','--url',required=True,nargs='+',help='URL to Scan')
+    parser.add_argument('-p','--proxy',required=False,nargs='+',help='ip:port of Burp Proxy Server')
     args = parser.parse_args()
     print("""
     
@@ -99,7 +63,7 @@ def main():
     """)
     for urls in args.url:
             print("=== "+urls+" ===")
-            verifysecureheaders(urls,args.ssl)
+            verifysecureheaders(urls,args.proxy)
             print("===============")
 
 if __name__ == '__main__':
